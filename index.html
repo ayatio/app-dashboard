@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1020" />
+<title>App Dashboard</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-grad-1: #131a30;
+    --bg-grad-2: #0b1020;
+    --panel: #151b2e;
+    --panel-2: #1b2338;
+    --panel-hover: #1f2942;
+    --border: #26304d;
+    --text: #e7ecf3;
+    --muted: #9aa7c2;
+    --muted-2: #6f7d9c;
+    --chip: rgba(255,255,255,0.92);
+    --chip-text: #1c2438;
+    --accent: #6ea8fe;
+    --accent-2: #a78bfa;
+    --live: #22c55e;
+    --staging: #f59e0b;
+    --wip: #3b82f6;
+    --tool: #a78bfa;
+    --idea: #64748b;
+    --archived: #64748b;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    --radius: 18px;
+  }
+  html[data-theme="light"] {
+    --bg: #f4f6fb;
+    --bg-grad-1: #ffffff;
+    --bg-grad-2: #eef1f8;
+    --panel: #ffffff;
+    --panel-2: #f7f9fd;
+    --panel-hover: #ffffff;
+    --border: #e2e8f4;
+    --text: #131a2b;
+    --muted: #5a6784;
+    --muted-2: #8a97b4;
+    --chip: #f1f4fb;
+    --chip-text: #23304d;
+    --shadow: 0 10px 30px rgba(30,50,90,0.10);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, var(--bg-grad-1), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(167,139,250,0.10), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  /* Header */
+  header.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand h1 {
+    font-size: clamp(24px, 4.5vw, 38px); margin: 0; letter-spacing: -0.02em; font-weight: 800;
+    background: linear-gradient(90deg, var(--text), var(--accent) 120%);
+    -webkit-background-clip: text; background-clip: text;
+  }
+  .brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+  .brand .dot { color: var(--live); }
+  .theme-btn {
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    border-radius: 999px; padding: 9px 14px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .theme-btn:hover { background: var(--panel-hover); }
+  .theme-btn:active { transform: scale(.97); }
+
+  /* Stat tiles */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0 8px; }
+  .stat {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 16px 14px;
+    display: flex; flex-direction: column; gap: 6px; min-height: 92px; box-shadow: var(--shadow);
+  }
+  .stat .val { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+  .stat .lbl { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .stat .pipdot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 22px 0 18px; }
+  .search {
+    flex: 1 1 240px; min-width: 200px; display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px;
+  }
+  .search input { border: none; outline: none; background: transparent; color: var(--text); font-size: 15px; width: 100%; }
+  .search svg { flex: none; opacity: .6; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip-btn {
+    border: 1px solid var(--border); background: var(--panel); color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+    transition: all .15s ease; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .chip-btn:hover { color: var(--text); background: var(--panel-hover); }
+  .chip-btn.active { color: #fff; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-color: transparent; }
+  html[data-theme="light"] .chip-btn.active { color: #fff; }
+  .chip-btn .count { opacity: .7; font-variant-numeric: tabular-nums; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+  .card {
+    position: relative; background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 18px 16px;
+    display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow);
+    transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .card .head { display: flex; align-items: center; gap: 12px; }
+  .card .emoji {
+    width: 46px; height: 46px; flex: none; border-radius: 13px; display: grid; place-items: center; font-size: 24px;
+    background: radial-gradient(120% 120% at 30% 20%, rgba(110,168,254,0.22), rgba(167,139,250,0.14));
+    border: 1px solid var(--border);
+  }
+  .card .titles { min-width: 0; flex: 1; }
+  .card .titles h3 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+  .card .titles .cat { font-size: 12px; color: var(--muted-2); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .status {
+    display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .status .d { width: 8px; height: 8px; border-radius: 50%; }
+  .desc { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 0; min-height: 40px; }
+
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+  .progress { flex: 1; height: 8px; border-radius: 999px; background: var(--panel-hover); overflow: hidden; border: 1px solid var(--border); }
+  html[data-theme="light"] .progress { background: #eef1f8; }
+  .progress > span { display: block; height: 100%; border-radius: 999px; }
+  .progress-val { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; width: 34px; text-align: right; }
+
+  .tech { display: flex; flex-direction: column; gap: 7px; }
+  .tech-row { display: flex; align-items: center; gap: 8px; }
+  .tech-row .rk { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted-2); width: 52px; flex: none; }
+  .tech-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; background: var(--chip); color: var(--chip-text);
+    border-radius: 8px; padding: 4px 9px 4px 6px; font-size: 12px; font-weight: 600; line-height: 1;
+  }
+  .pill img { width: 15px; height: 15px; display: block; }
+  .pill.empty { background: transparent; color: var(--muted-2); font-weight: 500; padding-left: 0; }
+
+  .card .foot { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+  .btn-open {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #fff; text-decoration: none;
+    border-radius: 11px; padding: 10px 12px; font-size: 13.5px; font-weight: 700; transition: opacity .15s ease, transform .1s ease;
+  }
+  .btn-open:hover { opacity: .92; }
+  .btn-open:active { transform: scale(.98); }
+  .btn-open.disabled { background: var(--panel-hover); color: var(--muted-2); pointer-events: none; }
+  .icon-link {
+    width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 11px;
+    border: 1px solid var(--border); background: var(--panel); color: var(--muted); text-decoration: none; transition: all .15s ease;
+  }
+  .icon-link:hover { color: var(--text); background: var(--panel-hover); }
+  .review {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: var(--staging);
+    background: color-mix(in srgb, var(--staging) 16%, transparent); border: 1px solid color-mix(in srgb, var(--staging) 40%, transparent);
+    padding: 2px 7px; border-radius: 999px; letter-spacing: .01em;
+  }
+
+  /* Infra section */
+  .section-title { display: flex; align-items: center; gap: 10px; margin: 40px 0 14px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .section-title .line { flex: 1; height: 1px; background: var(--border); }
+  .infra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .infra-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 15px; display: flex; align-items: center; gap: 12px; }
+  .infra-card img { width: 22px; height: 22px; }
+  .infra-card .info { min-width: 0; }
+  .infra-card .info b { font-size: 13.5px; display: block; }
+  .infra-card .info span { font-size: 12px; color: var(--muted); }
+  .health { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--live); }
+  .health .d { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 22%, transparent); }
+  .hosting-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .host-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--chip); color: var(--chip-text); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
+  .host-pill img { width: 17px; height: 17px; }
+
+  footer.foot-note { margin-top: 40px; color: var(--muted-2); font-size: 12.5px; text-align: center; line-height: 1.7; }
+  footer.foot-note b { color: var(--muted); }
+  .empty-state { text-align: center; color: var(--muted); padding: 60px 20px; }
+
+  @media (max-width: 720px) {
+    .wrap { padding: 20px 14px 56px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+    .brand p { max-width: 90%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>App Dashboard</h1>
+      <p><span class="dot">●</span> Al mijn gehoste apps op één plek &nbsp;·&nbsp; laatst bijgewerkt <b id="updated">—</b></p>
+    </div>
+    <button class="theme-btn" id="themeBtn" aria-label="Wissel thema">
+      <span id="themeIcon">☀️</span><span id="themeLbl">Licht</span>
+    </button>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="controls">
+    <label class="search">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input id="search" type="search" placeholder="Zoek app, technologie of tag…" autocomplete="off" />
+    </label>
+    <div class="chips" id="filters"></div>
+  </div>
+
+  <section class="grid" id="grid"></section>
+
+  <div class="section-title"><span>🧩 Backends &amp; infrastructuur</span><span class="line"></span></div>
+  <div class="infra-grid" id="infraGrid"></div>
+  <div class="hosting-strip" id="hostingStrip"></div>
+
+  <footer class="foot-note" id="footNote"></footer>
+</div>
+
+<script id="fallback-data" type="application/json">
+{"generatedAt":"2026-07-24","owner":"ayatio","apps":[{"id":"kameraad-booking","name":"Kameraad Booking","icon":"✂️","description":"Online boekingssysteem voor Kameraad.","url":"https://kameraad-booking.vercel.app","repo":"https://github.com/ayatio/kameraad-booking","category":"App","status":"live","progress":85,"frontend":["react"],"backend":["supabase"],"infra":["vercel"],"tags":["booking","kameraad"],"reviewNeeded":false},{"id":"ottomap","name":"OttoMap","icon":"🗺️","description":"Visuele project-analyse tool met boards.","url":"https://ottomap.pages.dev","repo":null,"category":"App","status":"live","progress":80,"frontend":["react","vite"],"backend":["supabase"],"infra":["cloudflarepages"],"tags":["analyse","boards"],"reviewNeeded":false},{"id":"adobe-agentic-stack","name":"Adobe Agentic Stack","icon":"🤖","description":"Interactieve one-pager over de Adobe agentic marketing stack.","url":"https://ayatio.github.io/adobe-agentic-stack/","repo":"https://github.com/ayatio/adobe-agentic-stack","category":"Site","status":"live","progress":100,"frontend":["html5"],"backend":[],"infra":["githubpages"],"tags":["BNP","Adobe","AI"],"reviewNeeded":false},{"id":"kameraad-haarsnijder-site","name":"Kameraad Haarsnijder Site","icon":"💈","description":"Statische marketing-homepage voor Kameraad Haarsnijder.","url":"https://ayatio.github.io/kameraad-haarsnijder-site/","repo":"https://github.com/ayatio/kameraad-haarsnijder-site","category":"Site","status":"staging","progress":70,"frontend":["html5","javascript"],"backend":[],"infra":["githubpages"],"tags":["marketing","kameraad"],"reviewNeeded":false},{"id":"elise-bedtijdroutine","name":"Elise Bedtijdroutine","icon":"🌙","description":"App rond de bedtijdroutine voor Elise.","url":null,"repo":null,"category":"App","status":"wip","progress":45,"frontend":["react"],"backend":["supabase"],"infra":["local"],"tags":["routine","kids"],"reviewNeeded":true},{"id":"react-ch-query-builder","name":"React ClickHouse Query Builder","icon":"🧱","description":"React-component om ClickHouse queries visueel op te bouwen.","url":"https://ayatio.github.io/react-ch-query-builder/","repo":"https://github.com/ayatio/react-ch-query-builder","category":"Library","status":"wip","progress":40,"frontend":["react"],"backend":["clickhouse"],"infra":["githubpages"],"tags":["component","data"],"reviewNeeded":false},{"id":"knowledge-indexer","name":"Knowledge Indexer","icon":"🧠","description":"Indexeert en verrijkt de second brain (Brainiac-ritueel).","url":null,"repo":"https://github.com/ayatio/knowledge-indexer","category":"Tool","status":"tool","progress":55,"frontend":[],"backend":["python"],"infra":["obsidian"],"tags":["second-brain","automation"],"reviewNeeded":false},{"id":"razdar","name":"RazDar","icon":"🦀","description":"Rust-project (workspace met app + crates).","url":null,"repo":"https://github.com/ayatio/RazDar","category":"App","status":"wip","progress":35,"frontend":[],"backend":["rust"],"infra":["local"],"tags":["rust"],"reviewNeeded":true},{"id":"ottomap-2","name":"OttoMap 2.0","icon":"🗺️","description":"Nieuwe versie van OttoMap. Lokaal project, details te bevestigen.","url":null,"repo":null,"category":"App","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["otto","lokaal"],"reviewNeeded":true},{"id":"ottoscan","name":"OttoScan","icon":"🔍","description":"Scan-tool in de OttoMap-familie. Lokaal project.","url":null,"repo":null,"category":"Tool","status":"wip","progress":35,"frontend":[],"backend":[],"infra":["local"],"tags":["otto","lokaal"],"reviewNeeded":true},{"id":"second-brain","name":"Second Brain","icon":"🧠","description":"Second brain systeem (Obsidian vault + automatisering).","url":null,"repo":null,"category":"Tool","status":"tool","progress":60,"frontend":[],"backend":[],"infra":["obsidian","local"],"tags":["second-brain","lokaal"],"reviewNeeded":true},{"id":"stephanie","name":"Stephanie","icon":"🤝","description":"AI-agent. Lokaal project, tech te bevestigen.","url":null,"repo":null,"category":"App","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["agent","lokaal"],"reviewNeeded":true},{"id":"talebloom","name":"Talebloom","icon":"📖","description":"Storytelling-product. Lokaal project.","url":null,"repo":null,"category":"App","status":"wip","progress":45,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"whimsisworld","name":"Whimsis World","icon":"✨","description":"Product. Lokaal project, details te bevestigen.","url":null,"repo":null,"category":"App","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"vani-web","name":"Vani (web)","icon":"🌱","description":"Vani web-app. Lokaal project.","url":null,"repo":null,"category":"App","status":"wip","progress":45,"frontend":[],"backend":[],"infra":["local"],"tags":["agent","lokaal"],"reviewNeeded":true},{"id":"waariselise","name":"Waar is Elise","icon":"📍","description":"Locatie-app. Lokaal project, details te bevestigen.","url":null,"repo":null,"category":"App","status":"wip","progress":35,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"treasure-map","name":"Treasure Map","icon":"🧭","description":"Lokaal project, details te bevestigen.","url":null,"repo":null,"category":"App","status":"idea","progress":25,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"self-operating-computer","name":"Self-Operating Computer","icon":"🖥️","description":"Agent die de computer bedient. Lokaal project.","url":null,"repo":null,"category":"Tool","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["agent","lokaal"],"reviewNeeded":true},{"id":"voice-assistant","name":"Voice Assistant","icon":"🎙️","description":"Spraakassistent. Lokaal project.","url":null,"repo":null,"category":"App","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["voice","lokaal"],"reviewNeeded":true},{"id":"train-schedule-app","name":"Train Schedule App","icon":"🚆","description":"Treinschema-app. Lokaal project.","url":null,"repo":null,"category":"App","status":"wip","progress":45,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"pendelscherm","name":"PendelScherm","icon":"🚉","description":"Vertrektijden-display (pendel). Lokaal project.","url":null,"repo":null,"category":"App","status":"wip","progress":35,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"whatsapp-integration","name":"WhatsApp Integration","icon":"💬","description":"WhatsApp-integratie. Lokaal project.","url":null,"repo":null,"category":"Tool","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"cost-meter","name":"Cost Meter","icon":"📊","description":"Kostenmeter/tool. Lokaal project.","url":null,"repo":null,"category":"Tool","status":"wip","progress":40,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal"],"reviewNeeded":true},{"id":"darwin-ui","name":"Darwin UI","icon":"🎨","description":"UI-componenten. Lokaal project.","url":null,"repo":null,"category":"Library","status":"wip","progress":35,"frontend":[],"backend":[],"infra":["local"],"tags":["lokaal","component"],"reviewNeeded":true}],"infra":{"supabase":[{"name":"project-analysis-map","app":"OttoMap","region":"eu-west-2","status":"healthy"},{"name":"kameraad-staging","app":"Kameraad Booking","region":"eu-central-1","status":"healthy"},{"name":"elise-bedtijdroutine","app":"Elise Bedtijdroutine","region":"eu-west-2","status":"healthy"}],"hosting":["vercel","cloudflarepages","githubpages","supabase","vps","local"]}}
+</script>
+
+<script>
+const STATUS = {
+  live:     { label: "Live",             color: "var(--live)" },
+  staging:  { label: "Staging",          color: "var(--staging)" },
+  wip:      { label: "In ontwikkeling",  color: "var(--wip)" },
+  tool:     { label: "Tool",             color: "var(--tool)" },
+  idea:     { label: "Idee",             color: "var(--idea)" },
+  archived: { label: "Archief",          color: "var(--archived)" }
+};
+const TECH = {
+  react:"React", nextdotjs:"Next.js", vite:"Vite", vuedotjs:"Vue", svelte:"Svelte",
+  typescript:"TypeScript", javascript:"JavaScript", html5:"HTML", tailwindcss:"Tailwind",
+  supabase:"Supabase", postgresql:"PostgreSQL", clickhouse:"ClickHouse", python:"Python",
+  rust:"Rust", nodedotjs:"Node.js", vercel:"Vercel", cloudflarepages:"Cloudflare Pages",
+  cloudflare:"Cloudflare", githubpages:"GitHub Pages", github:"GitHub", obsidian:"Obsidian",
+  anthropic:"Claude", docker:"Docker", flutter:"Flutter", firebase:"Firebase",
+  local:"Lokaal", vps:"VPS", go:"Go", swift:"Swift", nginx:"NGINX", cloudflareworkers:"CF Workers"
+};
+const iconUrl = slug => `https://cdn.simpleicons.org/${slug}`;
+const techLabel = slug => TECH[slug] || (slug.charAt(0).toUpperCase() + slug.slice(1));
+
+let DATA = null;
+let activeFilter = "all";
+let query = "";
+
+async function load() {
+  try {
+    const res = await fetch("apps.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("no file");
+    DATA = await res.json();
+  } catch (e) {
+    DATA = JSON.parse(document.getElementById("fallback-data").textContent);
+  }
+  render();
+}
+
+function pill(slug) {
+  return `<span class="pill"><img src="${iconUrl(slug)}" alt="" loading="lazy" onerror="this.style.display='none'">${techLabel(slug)}</span>`;
+}
+function techRow(rank, arr) {
+  const inner = (arr && arr.length) ? arr.map(pill).join("") : `<span class="pill empty">—</span>`;
+  return `<div class="tech-row"><span class="rk">${rank}</span><div class="tech-pills">${inner}</div></div>`;
+}
+
+function card(a) {
+  const st = STATUS[a.status] || STATUS.idea;
+  const hasUrl = !!a.url;
+  const openBtn = hasUrl
+    ? `<a class="btn-open" href="${a.url}" target="_blank" rel="noopener">Open app <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg></a>`
+    : `<span class="btn-open disabled">Nog geen URL</span>`;
+  const repoBtn = a.repo
+    ? `<a class="icon-link" href="${a.repo}" target="_blank" rel="noopener" title="Repository"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.700 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 2.5-.34c.85 0 1.71.12 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"></path></svg></a>`
+    : "";
+  const review = a.reviewNeeded ? `<span class="review">⚠ controleer</span>` : "";
+  return `
+  <article class="card">
+    <div class="head">
+      <div class="emoji">${a.icon || "📦"}</div>
+      <div class="titles">
+        <h3>${a.name}</h3>
+        <div class="cat">${a.category || ""}${review}</div>
+      </div>
+      <span class="status" style="color:${st.color}; background:color-mix(in srgb, ${st.color} 15%, transparent)"><span class="d" style="background:${st.color}"></span>${st.label}</span>
+    </div>
+    <p class="desc">${a.description || ""}</p>
+    <div class="progress-wrap">
+      <div class="progress"><span style="width:${a.progress||0}%; background:linear-gradient(90deg, ${st.color}, color-mix(in srgb, ${st.color} 55%, #fff))"></span></div>
+      <span class="progress-val">${a.progress||0}%</span>
+    </div>
+    <div class="tech">
+      ${techRow("Front", a.frontend)}
+      ${techRow("Back", a.backend)}
+      ${techRow("Infra", a.infra)}
+    </div>
+    <div class="foot">${openBtn}${repoBtn}</div>
+  </article>`;
+}
+
+function matches(a) {
+  if (activeFilter !== "all" && a.status !== activeFilter) return false;
+  if (!query) return true;
+  const hay = [a.name, a.description, a.category, ...(a.tags||[]), ...(a.frontend||[]), ...(a.backend||[]), ...(a.infra||[])].join(" ").toLowerCase();
+  return hay.includes(query);
+}
+
+function renderStats() {
+  const apps = DATA.apps;
+  const by = s => apps.filter(a => a.status === s).length;
+  const tiles = [
+    { val: apps.length, lbl: "Apps totaal", color: "var(--accent)" },
+    { val: by("live"), lbl: "Live", color: "var(--live)" },
+    { val: by("wip") + by("staging"), lbl: "In ontwikkeling", color: "var(--wip)" },
+    { val: by("tool"), lbl: "Tools", color: "var(--tool)" }
+  ];
+  document.getElementById("stats").innerHTML = tiles.map(t => `
+    <div class="stat">
+      <div class="val" style="color:${t.color}">${t.val}</div>
+      <div class="lbl"><span class="pipdot" style="background:${t.color}"></span>${t.lbl}</div>
+    </div>`).join("");
+}
+
+function renderFilters() {
+  const apps = DATA.apps;
+  const present = [...new Set(apps.map(a => a.status))];
+  const order = ["live","staging","wip","tool","idea","archived"];
+  const opts = [{ k:"all", label:"Alle", count: apps.length }]
+    .concat(order.filter(s => present.includes(s)).map(s => ({ k:s, label: STATUS[s].label, count: apps.filter(a=>a.status===s).length, color: STATUS[s].color })));
+  document.getElementById("filters").innerHTML = opts.map(o => `
+    <button class="chip-btn ${o.k===activeFilter?'active':''}" data-k="${o.k}">
+      ${o.color?`<span class="pipdot" style="width:8px;height:8px;border-radius:50%;background:${o.k===activeFilter?'#fff':o.color}"></span>`:''}
+      ${o.label}<span class="count">${o.count}</span>
+    </button>`).join("");
+  document.querySelectorAll(".chip-btn").forEach(b => b.onclick = () => { activeFilter = b.dataset.k; render(); });
+}
+
+function renderGrid() {
+  const list = DATA.apps.filter(matches);
+  const grid = document.getElementById("grid");
+  grid.innerHTML = list.length ? list.map(card).join("")
+    : `<div class="empty-state">Geen apps gevonden voor deze filter.</div>`;
+}
+
+function renderInfra() {
+  const inf = DATA.infra || {};
+  const sb = inf.supabase || [];
+  document.getElementById("infraGrid").innerHTML = sb.map(s => `
+    <div class="infra-card">
+      <img src="${iconUrl('supabase')}" alt="Supabase" onerror="this.style.display='none'">
+      <div class="info"><b>${s.name}</b><span>${s.app} · ${s.region}</span></div>
+      <span class="health" title="Status"><span class="d"></span>${s.status||'ok'}</span>
+    </div>`).join("");
+  const hosts = inf.hosting || [];
+  document.getElementById("hostingStrip").innerHTML = hosts.map(h => `
+    <span class="host-pill"><img src="${iconUrl(h)}" alt="" onerror="this.style.display='none'">${techLabel(h)}</span>`).join("");
+}
+
+function renderFoot() {
+  document.getElementById("updated").textContent = DATA.generatedAt || "—";
+  const n = DATA.apps.length;
+  document.getElementById("footNote").innerHTML =
+    `<b>${n}</b> apps · dit dashboard werkt zichzelf dagelijks bij via een automatische scan van GitHub en Supabase.<br>Nieuwe app? Ze verschijnt hier vanzelf, met een <b>controleer</b>-label tot de details kloppen.`;
+}
+
+function render() {
+  renderStats();
+  renderFilters();
+  renderGrid();
+  renderInfra();
+  renderFoot();
+}
+
+document.getElementById("search").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); renderGrid(); });
+
+const themeBtn = document.getElementById("themeBtn");
+themeBtn.addEventListener("click", () => {
+  const html = document.documentElement;
+  const light = html.getAttribute("data-theme") === "light";
+  html.setAttribute("data-theme", light ? "dark" : "light");
+  document.getElementById("themeIcon").textContent = light ? "☀️" : "🌙";
+  document.getElementById("themeLbl").textContent = light ? "Licht" : "Donker";
+});
+
+load();
+</script>
+</body>
+</html>
